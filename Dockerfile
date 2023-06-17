@@ -1,4 +1,7 @@
+# syntax=docker/dockerfile:1
+
 FROM debian:bookworm-slim AS builder
+WORKDIR /root
 
 RUN apt-get update && apt-get dist-upgrade --no-install-recommends -y
 
@@ -11,7 +14,6 @@ RUN apt-get install --no-install-recommends -y \
         cmake \
         coreutils \
         curl \
-        curl \
         flatbuffers-compiler \
         gawk \
         git \
@@ -20,6 +22,9 @@ RUN apt-get install --no-install-recommends -y \
         libssl-dev \
         llvm-spirv-15 \
         make \
+        mold \
+        musl-dev \
+        musl-tools \
         pkg-config \
         protobuf-compiler \
         sed \
@@ -28,24 +33,43 @@ RUN apt-get install --no-install-recommends -y \
         wget \
     && rm -rf /var/lib/apt/lists/*
 
-RUN (curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs >rustup-installer.sh) \
-    && chmod +x rustup-installer.sh \
-    && ./rustup-installer.sh -y \
-        --default-toolchain stable \
-        --component cargo,clippy,rustfmt
-ENV PATH=/root/.cargo/bin:${PATH}
+ENV RUSTUP_HOME=/usr/local/rustup \
+    CARGO_HOME=/usr/local/cargo \
+    PATH="/usr/local/cargo/bin:${PATH}" \
+    RUST_VERSION=stable
+COPY install-rust.sh .
+RUN ./install-rust.sh && rm -f ./install-rust.sh
 
-RUN cargo install --locked \
+RUN --mount=type=cache,target=/usr/local/cargo/registry \
+    cargo install --locked sccache \
+        --no-default-features \
+    && mkdir -p /root/.cache/sccache \
+    && cat >"${CARGO_HOME}/config.toml" <<EOF
+[registries.crates-io]
+protocol = "sparse"
+
+[build]
+rustc-wrapper = "${CARGO_HOME}/bin/sccache"
+incremental = false
+EOF
+
+RUN --mount=type=cache,target=/usr/local/cargo/registry \
+    --mount=type=cache,target=/root/.cache/sccache \
+    cargo install --locked \
         cargo-all-features \
         cargo-audit \
         cargo-deny \
         cargo-machete \
         cargo-nextest \
-        cargo-update \
-        sccache
+        cargo-update
 
-RUN cargo install --locked \
+RUN --mount=type=cache,target=/usr/local/cargo/registry \
+    --mount=type=cache,target=/root/.cache/sccache \
+    cargo install --locked \
         wasm-bindgen-cli \
         cargo-binutils \
         wasm-gc \
         wasm-snip
+
+RUN --mount=type=cache,target=/root/.cache/sccache \
+    sccache --show-stats
