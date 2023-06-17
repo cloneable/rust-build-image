@@ -43,6 +43,7 @@ COPY install-rust.sh .
 RUN ./install-rust.sh && rm -f ./install-rust.sh
 
 RUN --mount=type=cache,target=/usr/local/cargo/registry \
+    --mount=type=cache,target=/root/.cache/sccache \
     cargo install --locked sccache \
         --no-default-features \
     && mkdir -p /root/.cache/sccache \
@@ -60,18 +61,10 @@ RUN --mount=type=cache,target=/usr/local/cargo/registry \
     cargo install --locked \
         cargo-all-features \
         cargo-audit \
+        cargo-binutils \
         cargo-deny \
         cargo-machete \
         cargo-nextest \
-        cargo-update
-
-RUN --mount=type=cache,target=/usr/local/cargo/registry \
-    --mount=type=cache,target=/root/.cache/sccache \
-    cargo install --locked \
-        wasm-bindgen-cli \
-        cargo-binutils \
         wasm-gc \
-        wasm-snip
-
-RUN --mount=type=cache,target=/root/.cache/sccache \
-    sccache --show-stats
+        wasm-snip \
+    && sccache --show-stats
