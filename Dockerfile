@@ -1,6 +1,8 @@
 # syntax=docker/dockerfile:1
 
 FROM debian:bookworm-slim AS builder
+LABEL org.opencontainers.image.source=https://github.com/cloneable/rust-build-image
+
 WORKDIR /root
 
 RUN apt-get update && apt-get dist-upgrade --no-install-recommends -y
