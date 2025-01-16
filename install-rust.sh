@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-RUSTUP_VERSION="1.26.0"
+RUSTUP_VERSION="1.27.1"
 ARCH="$(dpkg --print-architecture)"
 
 case "${ARCH##*-}" in
-    amd64) RUST_TARGET='x86_64-unknown-linux-gnu'; RUSTUP_SHA256='0b2f6c8f85a3d02fde2efc0ced4657869d73fccfce59defb4e8d29233116e6db' ;;
-    arm64) RUST_TARGET='aarch64-unknown-linux-gnu'; RUSTUP_SHA256='673e336c81c65e6b16dcdede33f4cc9ed0f08bde1dbe7a935f113605292dc800' ;;
+    amd64) RUST_TARGET='x86_64-unknown-linux-gnu'; RUSTUP_SHA256='6aeece6993e902708983b209d04c0d1dbb14ebb405ddb87def578d41f920f56d' ;;
+    arm64) RUST_TARGET='aarch64-unknown-linux-gnu'; RUSTUP_SHA256='1cffbf51e63e634c746f741de50649bbbcbd9dbe1de363c9ecef64e278dba2b2' ;;
     *) echo >&2 "unsupported architecture: ${ARCH}"; exit 1 ;;
 esac
 
@@ -22,7 +22,6 @@ chmod +x rustup-init
     --component cargo,clippy,rustfmt
 
 rm rustup-init
-chmod -R a+w "${RUSTUP_HOME}" "${CARGO_HOME}"
 
 rustup --version
 cargo --version
