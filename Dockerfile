@@ -27,6 +27,7 @@ RUN apt-get update \
     && apt-get dist-upgrade --no-install-recommends -y
 
 RUN apt-get install --no-install-recommends -y \
+        aggregate \
         autoconf \
         automake \
         bazel-bootstrap \
@@ -36,26 +37,39 @@ RUN apt-get install --no-install-recommends -y \
         cmake \
         coreutils \
         curl \
+        dnsutils \
         flatbuffers-compiler \
+        fzf \
         gawk \
         git \
-        gnupg \
+        gh \
+        gnupg2 \
+        iproute2 \
+        ipset \
+        iptables \
         jq \
+        less \
         libssl-dev \
         llvm-spirv-15 \
         locales \
         make \
+        man-db \
         mold \
         musl-dev \
         musl-tools \
+        nano \
+        npm \
         pkg-config \
+        procps \
         protobuf-compiler \
         sed \
         software-properties-common \
         sudo \
         spirv-tools \
+        vim \
         wabt \
         wget \
+        unzip \
         zsh \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
@@ -77,7 +91,7 @@ RUN addgroup --gid $USER_GID $USERNAME \
         --disabled-password \
         $USERNAME \
     && chown -R $USERNAME:$USERNAME /home/$USERNAME \
-    && echo "$USERNAME ALL=\(root\) NOPASSWD:ALL" > /etc/sudoers.d/$USERNAME \
+    && echo "$USERNAME ALL=(root) NOPASSWD: ALL" > /etc/sudoers.d/$USERNAME \
     && chmod 0440 /etc/sudoers.d/$USERNAME
 
 ENV HOME="/home/$USERNAME"
