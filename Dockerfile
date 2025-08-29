@@ -77,22 +77,23 @@ ENV LANG=en_US.UTF-8
 ENV LANGUAGE=en_US:en
 ENV LC_ALL=en_US.UTF-8
 
-ARG USERNAME=dev
-ARG USER_UID=1000
-ARG USER_GID=$USER_UID
+ARG USERNAME=node
+# ARG USERNAME=dev
+# ARG USER_UID=1000
+# ARG USER_GID=$USER_UID
 
-RUN addgroup --gid $USER_GID $USERNAME \
-    && adduser \
-        --uid $USER_UID --gid $USER_GID \
-        --shell /bin/zsh \
-        --comment "" \
-        --disabled-password \
-        $USERNAME \
-    && chown -R $USERNAME:$USERNAME /home/$USERNAME \
-    && echo "$USERNAME ALL=(root) NOPASSWD: ALL" > /etc/sudoers.d/$USERNAME \
-    && chmod 0440 /etc/sudoers.d/$USERNAME
+# RUN addgroup --gid $USER_GID $USERNAME \
+#     && adduser \
+#         --uid $USER_UID --gid $USER_GID \
+#         --shell /bin/zsh \
+#         --comment "" \
+#         --disabled-password \
+#         $USERNAME \
+#     && chown -R $USERNAME:$USERNAME /home/$USERNAME \
+#     && echo "$USERNAME ALL=(root) NOPASSWD: ALL" > /etc/sudoers.d/$USERNAME \
+#     && chmod 0440 /etc/sudoers.d/$USERNAME
 
-ENV HOME="/home/$USERNAME"
+ARG HOME="/home/$USERNAME"
 WORKDIR /home/$USERNAME
 
 USER $USERNAME:$USERNAME
