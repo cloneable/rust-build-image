@@ -2,13 +2,10 @@ FROM alpine:latest AS staging
 
 WORKDIR /root
 
-ENV DEBFILE=ca-certificates_20250419_all.deb
-ENV SHA256SUM=ef590f89563aa4b46c8260d49d1cea0fc1b181d19e8df3782694706adf05c184
-
+ARG DEBFILE=ca-certificates_20250419_all.deb
 RUN wget -O ca-certificates_all.deb "https://ftp-stud.hs-esslingen.de/debian/pool/main/c/ca-certificates/${DEBFILE}"
-RUN echo "${SHA256SUM} *ca-certificates_all.deb" | sha256sum -c
 
-FROM debian:bookworm-slim AS builder
+FROM node:20 AS builder
 LABEL org.opencontainers.image.source=https://github.com/cloneable/rust-build-image
 
 WORKDIR /root
@@ -17,10 +14,12 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV TERM=linux
 
 COPY --from=staging /root/ca-certificates_all.deb .
+ARG SHA256SUM=ef590f89563aa4b46c8260d49d1cea0fc1b181d19e8df3782694706adf05c184
+RUN echo "${SHA256SUM} *ca-certificates_all.deb" | sha256sum -c
 RUN dpkg --force-depends --install ca-certificates_all.deb || true
-RUN update-ca-certificates
+RUN update-ca-certificates --verbose
 
-RUN sed -i -re 's,http://deb.debian.org/,https://ftp-stud.hs-esslingen.de/,' /etc/apt/sources.list.d/debian.sources
+RUN sed -i -re 's,http://deb.debian.org/,https://deb.debian.org/,' /etc/apt/sources.list.d/debian.sources
 
 RUN apt-get update \
     && apt-get --fix-broken install -y \
@@ -58,7 +57,6 @@ RUN apt-get install --no-install-recommends -y \
         musl-dev \
         musl-tools \
         nano \
-        npm \
         pkg-config \
         procps \
         protobuf-compiler \
@@ -106,14 +104,14 @@ ENV RUSTUP_HOME="$HOME/.rustup" \
 COPY install-rust.sh .
 RUN ./install-rust.sh && rm -f ./install-rust.sh
 
-RUN cargo install sccache \
-        --no-default-features \
-    && mkdir -p /home/dev/.cache/sccache \
-    && cat >"${CARGO_HOME}/config.toml" <<EOF
-[build]
-rustc-wrapper = "${CARGO_HOME}/bin/sccache"
-incremental = false
-EOF
+# RUN cargo install sccache \
+#         --no-default-features \
+#     && mkdir -p /home/dev/.cache/sccache \
+#     && cat >"${CARGO_HOME}/config.toml" <<EOF
+# [build]
+# rustc-wrapper = "${CARGO_HOME}/bin/sccache"
+# incremental = false
+# EOF
 
 RUN cp /etc/zsh/newuser.zshrc.recommended .zshrc
 WORKDIR /workspace
